@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools", "wheel", "numpy", "Cython", "setuptools_scm[toml]>=3.4.1"]
+requires = ["setuptools", "wheel", "numpy==2.3.2", "Cython", "setuptools_scm[toml]>=3.4.1"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools_scm]
@@ -14,6 +14,8 @@ test-command = "pytest {package}/tests"
 before-test = ""
 test-requires = ["pytest"]
 test-extras = []
+
+build = "cp313-android_*"
 
 manylinux-x86_64-image = "manylinux2014"
 
@@ -49,3 +51,12 @@ PKG_CONFIG_PATH="/tmp/libjpeg-turbo-build/lib/pkgconfig:/tmp/vendor/lib/pkgconfi
 [tool.cibuildwheel.windows]
 before-all = "pip install delvewheel && python scripts\\fetch-ffmpeg C:\\cibw\\vendor"
 repair-wheel-command = "delvewheel repair -w {dest_dir} {wheel} --add-path C:\\cibw\\vendor\\bin"
+
+[tool.cibuildwheel.android.environment]
+ANDROID_LIBRARY_DIR = "./external_dependencies/ffmpeg-6.0/android/arm64-v8a/lib;./external_dependencies/libjpeg-turbo-2.1.0-minSdk23/arm64-v8a"
+ANDROID_INCLUDE_DIR = "./external_dependencies/ffmpeg-6.0/android/arm64-v8a/include;./external_dependencies/libjpeg-turbo-2.1.0-minSdk23/libjpeg-turbo-2.1.1"
+PIP_EXTRA_INDEX_URL = "https://chaquo.com/pypi-upstream/"
+
+[tool.cibuildwheel.android]
+repair-wheel-command = "auditwheel repair --ldpaths {delocate_archs}:$(pwd)/external_dependencies/ffmpeg-6.0/android/arm64-v8a/lib:$(pwd)/external_dependencies/libjpeg-turbo-2.1.0-minSdk23/arm64-v8a:$HOME/Library/Android/sdk/ndk/27.3.13750724/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/aarch64-linux-android/ -w {dest_dir} {wheel}"
+test-skip = "*-android_*" 

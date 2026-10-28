@@ -22,7 +22,19 @@ extra_link_args = []
 extra_objects = []
 include_dirs = [numpy.get_include()]
 if os.environ.get("CIBUILDWHEEL"):
-    if platform.system() == "Windows":
+    build_id = os.environ.get("CIBUILDWHEEL_BUILD_IDENTIFIER", "")
+    
+    if "android" in build_id:
+        # Cross-compiling for Android via cibuildwheel
+        libs += ["turbojpeg", "avutil", "avformat", "avcodec", "swscale"]
+        
+        # Read paths fed out of pyproject.toml's environment block and split multi-paths
+        if "ANDROID_INCLUDE_DIR" in os.environ:
+            include_dirs.extend(os.environ["ANDROID_INCLUDE_DIR"].split(";"))
+        if "ANDROID_LIBRARY_DIR" in os.environ:
+            library_dirs.extend(os.environ["ANDROID_LIBRARY_DIR"].split(";"))
+
+    elif platform.system() == "Windows":
         ffmpeg_base = "C:\\cibw\\vendor\\"
         libjpeg_turbo_base = "C:\\cibw\\libjpeg-turbo-build\\"
         include_dirs += [
